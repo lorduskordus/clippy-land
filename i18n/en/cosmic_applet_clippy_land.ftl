@@ -3,3 +3,4 @@ remove = Remove
 pin = Pin
 unpin = Unpin
 delete-all = Clear History
+search-placeholder = Search in clipboard history

@@ -3,3 +3,4 @@ remove = Odstranit
 pin = Připnout
 unpin = Odepnout
 delete-all = Clear History
+search-placeholder = Search
