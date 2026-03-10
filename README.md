@@ -38,10 +38,14 @@ just build
 
 # install for current user
 just install
+```
 
-# install with custom paths
+## Install with custom paths
+
+```
 # (supported env vars: BIN_DIR, APP_DIR, ICON_DIR, METAINFO_DIR, EXEC_PATH)
 # note: `just install` expands a leading `~/` in EXEC_PATH before writing the desktop `Exec=` line
+
 BIN_DIR=~/.local/bin \
 APP_DIR=~/.local/share/applications \
 ICON_DIR=~/.local/share/icons/hicolor/scalable/apps \
@@ -87,4 +91,5 @@ Thanks to our community contributors, Clippy Land is available in the following 
 
 - **Italian** ([k33wee](https://github.com/k33wee))
 - **English** ([k33wee](https://github.com/k33wee))
+- **Portuguese** ([GuilhermeTerriaga](https://github.com/GuilhermeTerriaga))
 - **Czech** ([lorduskordus](https://github.com/lorduskordus))
