@@ -1,4 +1,5 @@
 use crate::services::clipboard;
+use cosmic::iced::widget::scrollable;
 use cosmic::iced::window::Id;
 
 /// Messages emitted by the application and its widgets.
@@ -12,6 +13,7 @@ pub enum Message {
     ClearHistory,
     CopyFromHistory(usize),
     HoverEntry(Option<(usize, crate::app::model::FocusPart)>),
+    HistoryScrolled(scrollable::Viewport),
     /// Move the selection up (keyboard)
     MoveSelectionUp,
     /// Move the selection down (keyboard)

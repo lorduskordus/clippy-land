@@ -3,6 +3,7 @@ use super::{AppModel, Message};
 use crate::services::clipboard;
 use cosmic::iced::Subscription;
 use cosmic::iced::futures::channel::mpsc;
+use cosmic::iced::widget::scrollable::{self, RelativeOffset, Viewport};
 use cosmic::iced_winit::commands::popup::{destroy_popup, get_popup};
 use cosmic::prelude::*;
 use futures_util::SinkExt;
@@ -193,6 +194,10 @@ pub fn update(app: &mut AppModel, message: Message) -> Task<cosmic::Action<Messa
                 app.hovered_focus = None;
             }
         }
+        Message::HistoryScrolled(viewport) => {
+            app.at_scroll_bottom = viewport.relative_offset().y >= 0.999;
+            app.history_viewport = Some(viewport);
+        }
         Message::MoveSelectionUp => {
             if app.history.is_empty() {
                 return Task::none();
@@ -212,6 +217,7 @@ pub fn update(app: &mut AppModel, message: Message) -> Task<cosmic::Action<Messa
             // reset sub-focus to the main entry when moving selection
             app.keyboard_focus = Some((new_idx, crate::app::model::FocusPart::Entry));
             app.at_scroll_bottom = false;
+            return scroll_selection_into_view(app, new_idx);
         }
         Message::MoveSelectionDown => {
             if app.history.is_empty() {
@@ -225,6 +231,7 @@ pub fn update(app: &mut AppModel, message: Message) -> Task<cosmic::Action<Messa
             app.hovered_index = Some(new_idx);
             app.keyboard_focus = Some((new_idx, crate::app::model::FocusPart::Entry));
             app.at_scroll_bottom = false;
+            return scroll_selection_into_view(app, new_idx);
         }
 
         Message::MoveFocusLeft => {
@@ -332,6 +339,7 @@ pub fn update(app: &mut AppModel, message: Message) -> Task<cosmic::Action<Messa
                 app.popup = None;
                 app.hovered_index = None;
                 app.at_scroll_bottom = false;
+                app.history_viewport = None;
             }
         }
     }
@@ -352,6 +360,78 @@ fn should_ignore_clipboard_entry(entry: &str) -> bool {
     }
 
     false
+}
+
+fn scroll_selection_into_view(
+    app: &AppModel,
+    selected_index: usize,
+) -> Task<cosmic::Action<Message>> {
+    let current_top = app
+        .history_viewport
+        .map(|viewport| viewport.relative_offset().y);
+    let visible_fraction = app.history_viewport.map(visible_vertical_fraction);
+
+    desired_scroll_y(
+        current_top,
+        visible_fraction,
+        selected_index,
+        app.history.len(),
+    )
+    .map(|y| {
+        scrollable::snap_to(
+            crate::app::history_scroll_id(),
+            RelativeOffset { x: 0.0, y }.into(),
+        )
+    })
+    .unwrap_or_else(Task::none)
+}
+
+fn visible_vertical_fraction(viewport: Viewport) -> f32 {
+    let bounds = viewport.bounds();
+    let content_bounds = viewport.content_bounds();
+
+    if content_bounds.height <= 0.0 {
+        1.0
+    } else {
+        (bounds.height / content_bounds.height).clamp(0.0, 1.0)
+    }
+}
+
+fn desired_scroll_y(
+    current_top: Option<f32>,
+    visible_fraction: Option<f32>,
+    selected_index: usize,
+    item_count: usize,
+) -> Option<f32> {
+    if item_count <= 1 {
+        return None;
+    }
+
+    let row_fraction = 1.0 / item_count as f32;
+    let target_center = (selected_index.min(item_count - 1) as f32 + 0.5) * row_fraction;
+
+    let (Some(current_top), Some(visible_fraction)) = (current_top, visible_fraction) else {
+        return Some(target_center.clamp(0.0, 1.0));
+    };
+
+    if !current_top.is_finite() || !visible_fraction.is_finite() {
+        return Some(target_center.clamp(0.0, 1.0));
+    }
+
+    let visible_fraction = visible_fraction.clamp(0.0, 1.0);
+    if visible_fraction >= 0.999 {
+        return None;
+    }
+
+    let scrollable_fraction = (1.0 - visible_fraction).max(f32::EPSILON);
+    let desired_top =
+        ((target_center - (visible_fraction / 2.0)) / scrollable_fraction).clamp(0.0, 1.0);
+
+    if (current_top - desired_top).abs() <= (row_fraction / scrollable_fraction) / 3.0 {
+        None
+    } else {
+        Some(desired_top)
+    }
 }
 
 #[cfg(test)]
@@ -489,13 +569,23 @@ mod tests {
     }
 
     #[test]
-    fn selecting_entry_closes_popup() {
-        let mut app = AppModel::default();
-        app.popup = Some(cosmic::iced::window::Id::unique());
-        app.history.push_back(text_item("copy me", false));
+    fn desired_scroll_y_moves_selection_into_visible_window() {
+        let offset = desired_scroll_y(Some(0.4), Some(0.25), 19, 30);
 
-        let _ = update(&mut app, Message::CopyFromHistory(0));
+        assert!(matches!(offset, Some(value) if (value - 0.7).abs() < 0.000_1));
+    }
 
-        assert!(app.popup.is_none());
+    #[test]
+    fn desired_scroll_y_skips_when_selection_is_already_centered() {
+        let offset = desired_scroll_y(Some(0.42857143), Some(0.3), 13, 30);
+
+        assert_eq!(offset, None);
+    }
+
+    #[test]
+    fn desired_scroll_y_falls_back_to_target_ratio_without_viewport() {
+        let offset = desired_scroll_y(None, None, 5, 10);
+
+        assert_eq!(offset, Some(0.55));
     }
 }

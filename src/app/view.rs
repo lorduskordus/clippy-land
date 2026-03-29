@@ -178,6 +178,8 @@ pub fn view_window(app: &AppModel, _id: Id) -> Element<'_, Message> {
                 .padding([0, 12, 0, 12])
                 .width(Length::Fill),
         )
+        .id(crate::app::history_scroll_id())
+        .on_scroll(Message::HistoryScrolled)
         .width(Length::Fill),
     )
     .max_height(400.0)

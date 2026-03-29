@@ -21,6 +21,8 @@ pub struct AppModel {
     pub(super) hovered_focus: Option<(usize, FocusPart)>,
     /// Whether the history list is scrolled to the bottom.
     pub(super) at_scroll_bottom: bool,
+    /// Last observed history scroll viewport, used to keep keyboard selection in view.
+    pub(super) history_viewport: Option<cosmic::iced::widget::scrollable::Viewport>,
     /// Keyboard focus within the history: (index, part) where part is Entry/Pin/Remove
     pub(super) keyboard_focus: Option<(usize, FocusPart)>,
 }
