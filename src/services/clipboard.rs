@@ -5,7 +5,7 @@ use std::path::{Path, PathBuf};
 
 use wl_clipboard_rs::{
     copy::{MimeType as CopyMimeType, Options as CopyOptions, Source},
-    paste::{get_contents, ClipboardType, MimeType as PasteMimeType, Seat},
+    paste::{ClipboardType, MimeType as PasteMimeType, Seat, get_contents},
 };
 
 const MAX_IMAGE_BYTES: usize = 8 * 1024 * 1024;
@@ -386,8 +386,7 @@ mod tests {
     #[test]
     fn parses_first_local_file_uri() {
         let list = "# comment\n\nfile:///tmp/hello%20world.png\nfile:///tmp/second.jpg\n";
-        let parsed =
-            parse_first_local_path_from_uri_list(list).expect("first path should parse");
+        let parsed = parse_first_local_path_from_uri_list(list).expect("first path should parse");
         assert_eq!(parsed, PathBuf::from("/tmp/hello world.png"));
     }
 

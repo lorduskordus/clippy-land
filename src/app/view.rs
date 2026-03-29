@@ -2,7 +2,7 @@ use super::{AppModel, Message, icons};
 use crate::fl;
 use crate::services::clipboard;
 use cosmic::iced::widget::image::Handle as ImageHandle;
-use cosmic::iced::{Alignment, Length, window::Id};
+use cosmic::iced::{Alignment, Background, Color, Length, Vector, window::Id};
 use cosmic::prelude::*;
 use cosmic::widget;
 
@@ -74,22 +74,30 @@ pub fn view_window(app: &AppModel, _id: Id) -> Element<'_, Message> {
             };
 
             let copy_button = widget::button::custom(label)
-                .class(cosmic::theme::Button::MenuItem)
+                .class(cosmic::theme::Button::Custom {
+                    active: Box::new(|_, theme| transparent_entry_button_style(theme)),
+                    disabled: Box::new(transparent_entry_button_style),
+                    hovered: Box::new(|_, theme| transparent_entry_button_style(theme)),
+                    pressed: Box::new(|_, theme| transparent_entry_button_style(theme)),
+                })
                 .on_press(Message::CopyFromHistory(idx))
                 .width(Length::Fill)
                 .padding([8, 12]);
 
-            // Make the copy button highlight when selected (keyboard) the same way as hover.
-            let mut copy_button_elem: Element<'_, Message> = copy_button.into();
-            let kb_focused = app.keyboard_focus == Some((idx, crate::app::model::FocusPart::Entry));
-            let hovered_entry = app.hovered_focus == Some((idx, crate::app::model::FocusPart::Entry));
-            // Defer entry highlight to the outer card container to ensure the full area is highlighted.
+            let entry_active = app.keyboard_focus
+                == Some((idx, crate::app::model::FocusPart::Entry))
+                || app.hovered_focus == Some((idx, crate::app::model::FocusPart::Entry));
 
-
-            // Add mouse enter/exit to the copy button so hovering sets hovered_focus consistently
-            let copy_button_elem = widget::mouse_area(copy_button_elem)
-                .on_enter(Message::HoverEntry(Some((idx, crate::app::model::FocusPart::Entry))))
-                .on_exit(Message::HoverEntry(None));
+            // Add mouse enter/exit to the copy button so hovering sets hovered_focus consistently.
+            let copy_button_elem = widget::mouse_area(highlight_history_target(
+                widget::container(copy_button).width(Length::Fill).into(),
+                entry_active,
+            ))
+            .on_enter(Message::HoverEntry(Some((
+                idx,
+                crate::app::model::FocusPart::Entry,
+            ))))
+            .on_exit(Message::HoverEntry(None));
 
             let pin_button = widget::button::icon(if item.pinned {
                 icons::pin_icon_pinned()
@@ -111,48 +119,30 @@ pub fn view_window(app: &AppModel, _id: Id) -> Element<'_, Message> {
                 .extra_small()
                 .width(Length::Shrink);
 
-            // If keyboard focus targets this index and part, highlight the corresponding action
-            let kb_pin_focused = app.keyboard_focus == Some((idx, crate::app::model::FocusPart::Pin));
-            let kb_remove_focused = app.keyboard_focus == Some((idx, crate::app::model::FocusPart::Remove));
-
-            let mut pin_button_elem: Element<'_, Message> = pin_button.into();
-            if kb_pin_focused {
-                pin_button_elem = widget::container(pin_button_elem)
-                    .class(cosmic::theme::Container::custom(move |theme| {
-                        let cosmic = theme.cosmic();
-                        cosmic::widget::container::Style {
-                            background: Some(cosmic::iced::Background::Color(
-                                cosmic.background.component.hover.into(),
-                            )),
-                            ..Default::default()
-                        }
-                    }))
-                    .into();
-            }
-
-            let mut remove_button_elem: Element<'_, Message> = remove_button.into();
-            if kb_remove_focused {
-                remove_button_elem = widget::container(remove_button_elem)
-                    .class(cosmic::theme::Container::custom(move |theme| {
-                        let cosmic = theme.cosmic();
-                        cosmic::widget::container::Style {
-                            background: Some(cosmic::iced::Background::Color(
-                                cosmic.background.component.hover.into(),
-                            )),
-                            ..Default::default()
-                        }
-                    }))
-                    .into();
-            }
+            let pin_active = app.keyboard_focus == Some((idx, crate::app::model::FocusPart::Pin))
+                || app.hovered_focus == Some((idx, crate::app::model::FocusPart::Pin));
+            let remove_active = app.keyboard_focus
+                == Some((idx, crate::app::model::FocusPart::Remove))
+                || app.hovered_focus == Some((idx, crate::app::model::FocusPart::Remove));
 
             // Make sure mouse hovering over these also sets hovered_index so visuals match
-            let pin_button_elem = widget::mouse_area(pin_button_elem)
-                .on_enter(Message::HoverEntry(Some((idx, crate::app::model::FocusPart::Pin))))
-                .on_exit(Message::HoverEntry(None));
+            let pin_button_elem =
+                widget::mouse_area(highlight_history_target(pin_button.into(), pin_active))
+                    .on_enter(Message::HoverEntry(Some((
+                        idx,
+                        crate::app::model::FocusPart::Pin,
+                    ))))
+                    .on_exit(Message::HoverEntry(None));
 
-            let remove_button_elem = widget::mouse_area(remove_button_elem)
-                .on_enter(Message::HoverEntry(Some((idx, crate::app::model::FocusPart::Remove))))
-                .on_exit(Message::HoverEntry(None));
+            let remove_button_elem = widget::mouse_area(highlight_history_target(
+                remove_button.into(),
+                remove_active,
+            ))
+            .on_enter(Message::HoverEntry(Some((
+                idx,
+                crate::app::model::FocusPart::Remove,
+            ))))
+            .on_exit(Message::HoverEntry(None));
 
             let actions = widget::column::Column::new()
                 .spacing(2)
@@ -170,15 +160,7 @@ pub fn view_window(app: &AppModel, _id: Id) -> Element<'_, Message> {
                 .align_y(Alignment::Center)
                 .width(Length::Fill);
 
-            let is_image_entry = matches!(&item.entry, clipboard::ClipboardEntry::Image { .. });
-            let card_content: Element<'_, Message> = if is_image_entry {
-                widget::mouse_area(entry)
-                    .on_enter(Message::HoverEntry(Some((idx, crate::app::model::FocusPart::Entry))))
-                    .on_exit(Message::HoverEntry(None))
-                    .into()
-            } else {
-                entry.into()
-            };
+            let card_content: Element<'_, Message> = entry.into();
 
             // Always use Card container; inner elements handle their own hover/focus highlights.
             let container_widget = widget::container(card_content)
@@ -239,6 +221,48 @@ fn summarize_one_line(text: &str) -> String {
         line.push('…');
     }
     line
+}
+
+fn highlight_history_target<'a>(
+    content: Element<'a, Message>,
+    active: bool,
+) -> Element<'a, Message> {
+    if !active {
+        return content;
+    }
+
+    widget::container(content)
+        .class(cosmic::theme::Container::custom(|theme| {
+            let cosmic = theme.cosmic();
+            cosmic::widget::container::Style {
+                background: Some(cosmic::iced::Background::Color(
+                    cosmic.background.component.hover.into(),
+                )),
+                border: cosmic::iced::Border {
+                    radius: cosmic.corner_radii.radius_s.into(),
+                    ..Default::default()
+                },
+                ..Default::default()
+            }
+        }))
+        .into()
+}
+
+fn transparent_entry_button_style(theme: &cosmic::Theme) -> cosmic::widget::button::Style {
+    let cosmic = theme.cosmic();
+
+    cosmic::widget::button::Style {
+        shadow_offset: Vector::default(),
+        background: Some(Background::Color(Color::TRANSPARENT)),
+        overlay: None,
+        border_radius: cosmic.corner_radii.radius_s.into(),
+        border_width: 0.0,
+        border_color: Color::TRANSPARENT,
+        outline_width: 0.0,
+        outline_color: Color::TRANSPARENT,
+        icon_color: Some(cosmic.background.component.on.into()),
+        text_color: Some(cosmic.background.component.on.into()),
+    }
 }
 
 #[cfg(test)]
