@@ -58,6 +58,15 @@ just install
 just uninstall
 ```
 
+## Install for Debian/Ubuntu
+
+Download the latest .deb from the [releases page](https://github.com/k33wee/clippy-land/releases/):
+In a terminal, navigate to the directory where you downloaded the .deb file and run:
+
+```bash
+sudo apt install ./cosmic-applet-clippy-land_<version>_amd64.deb
+```
+
 ## Install for Fedora
 
 Thanks to [lorduskordus](https://github.com/lorduskordus) there is now an RPM package on COPR.
@@ -81,6 +90,7 @@ rpm-ostree install cosmic-applet-clippy-land
 ## Usage
 
 Open **COSMIC Settings → Desktop → Panel → Applets** and add “Clippy Land” to your panel.
+You might need to log out and back in to see the applet in the list of available applets.
 
 ## Notes
 
