@@ -121,3 +121,4 @@ Thanks to our community contributors, Clippy Land is available in the following 
 - **English** ([k33wee](https://github.com/k33wee))
 - **Portuguese** ([GuilhermeTerriaga](https://github.com/GuilhermeTerriaga))
 - **Czech** ([lorduskordus](https://github.com/lorduskordus))
+- **Ukrainian** ([Dymkom](https://github.com/Dymkom))
