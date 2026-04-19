@@ -56,20 +56,25 @@ just install
 
 ## Install with custom paths
 
-```
-# (supported env vars: BIN_DIR, APP_DIR, ICON_DIR, METAINFO_DIR, EXEC_PATH)
-# note: `just install` expands a leading `~/` in EXEC_PATH before writing the desktop `Exec=` line
+Pass a `prefix` variable to install everything under a custom root:
 
-BIN_DIR=~/.local/bin \
-APP_DIR=~/.local/share/applications \
-ICON_DIR=~/.local/share/icons/hicolor/scalable/apps \
-METAINFO_DIR=~/.local/share/metainfo \
-EXEC_PATH=~/.local/bin/cosmic-applet-clippy-land \
-just install
+```bash
+# install under ~/.local  (default is /usr)
+just prefix=~/.local install
 
 # uninstall
-just uninstall
+just prefix=~/.local uninstall
 ```
+
+All paths are derived from `prefix`:
+
+| Path | Default |
+|------|---------|
+| `<prefix>/bin` | binary + launcher script |
+| `<prefix>/share/applications` | `.desktop` file |
+| `<prefix>/share/icons/hicolor/scalable/apps` | app icon |
+| `<prefix>/share/metainfo` | MetaInfo file |
+| `<prefix>/share/licenses/<appid>` | license |
 
 ## Install with Flatpak
 

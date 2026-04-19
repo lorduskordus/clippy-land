@@ -1,14 +1,14 @@
 set dotenv-load := false
 
-name := 'cosmic-applet-clippy-land'
-appid := 'io.github.k33wee.clippy-land'
-prefix := '/usr'
+name    := 'cosmic-applet-clippy-land'
+appid   := 'io.github.k33wee.clippy-land'
+prefix  := '/usr'
 
-# configurable paths
-bin_dir := env_var_or_default("BIN_DIR", "~/.local/bin")
-app_dir := env_var_or_default("APP_DIR", "~/.local/share/applications")
-icon_dir := env_var_or_default("ICON_DIR", "~/.local/share/icons/hicolor/scalable/apps")
-metainfo_dir := env_var_or_default("METAINFO_DIR", "~/.local/share/metainfo")
+bin_dir      := prefix + '/bin'
+app_dir      := prefix + '/share/applications'
+icon_dir     := prefix + '/share/icons/hicolor/scalable/apps'
+metainfo_dir := prefix + '/share/metainfo'
+license_dir  := prefix + '/share/licenses/' + appid
 
 # default recipe
 _default:
@@ -22,27 +22,29 @@ build *args:
 build-release *args:
     just build {{args}}
 
-# Install for current user
+# Install (supports `just prefix=/app install` for Flatpak builds)
 install:
-    install -Dm755 target/release/{{name}} {{bin_dir}}/{{name}}
-    install -Dm755 resources/{{name}}.sh {{bin_dir}}/{{name}}.sh
-    install -Dm644 resources/{{appid}}.desktop {{app_dir}}/{{appid}}.desktop
+    install -Dm755 target/release/{{name}}          {{bin_dir}}/{{name}}
+    install -Dm755 resources/{{name}}.sh            {{bin_dir}}/{{name}}.sh
+    install -Dm644 resources/{{appid}}.desktop      {{app_dir}}/{{appid}}.desktop
     install -Dm644 resources/{{appid}}.metainfo.xml {{metainfo_dir}}/{{appid}}.metainfo.xml
-    install -Dm644 resources/icon.svg {{icon_dir}}/{{appid}}-symbolic.svg
-    install -Dm644 LICENSE {{bin_dir}}/../share/licenses/{{appid}}/LICENSE
+    install -Dm644 resources/icon.svg               {{icon_dir}}/{{appid}}.svg
+    install -Dm644 resources/icon.svg               {{icon_dir}}/{{appid}}-symbolic.svg
+    install -Dm644 LICENSE                          {{license_dir}}/LICENSE
     update-desktop-database {{app_dir}} || true
-    gtk-update-icon-cache -f ~/.local/share/icons/hicolor || true
+    gtk-update-icon-cache -f {{prefix}}/share/icons/hicolor || true
 
-# Uninstall for current user
+# Uninstall
 uninstall:
     rm -f {{bin_dir}}/{{name}}
     rm -f {{bin_dir}}/{{name}}.sh
     rm -f {{app_dir}}/{{appid}}.desktop
     rm -f {{metainfo_dir}}/{{appid}}.metainfo.xml
+    rm -f {{icon_dir}}/{{appid}}.svg
     rm -f {{icon_dir}}/{{appid}}-symbolic.svg
-    rm -f {{bin_dir}}/../share/licenses/{{appid}}/LICENSE
+    rm -f {{license_dir}}/LICENSE
     update-desktop-database {{app_dir}} || true
-    gtk-update-icon-cache -f ~/.local/share/icons/hicolor || true
+    gtk-update-icon-cache -f {{prefix}}/share/icons/hicolor || true
 
 # Clean build artifacts
 clean:

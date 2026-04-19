@@ -17,11 +17,7 @@
   "build-options": {
     "append-path": "/usr/lib/sdk/rust-stable/bin",
     "env": {
-      "CARGO_HOME": "/run/build/cosmic-applet-clippy-land/cargo",
-      "BIN_DIR": "/app/bin",
-      "APP_DIR": "/app/share/applications",
-      "ICON_DIR": "/app/share/icons/hicolor/scalable/apps",
-      "METAINFO_DIR": "/app/share/metainfo"
+      "CARGO_HOME": "/run/build/cosmic-applet-clippy-land/cargo"
     }
   },
   "modules": [
@@ -29,29 +25,23 @@
       "name": "cosmic-applet-clippy-land",
       "buildsystem": "simple",
       "build-commands": [
-        "just build-release --verbose --offline",
-        "just install"
+        "cargo --offline fetch --manifest-path Cargo.toml --verbose",
+        "cargo --offline build --release --verbose",
+        "install -Dm0755 target/release/cosmic-applet-clippy-land /app/bin/cosmic-applet-clippy-land",
+        "install -Dm0755 resources/cosmic-applet-clippy-land.sh /app/bin/cosmic-applet-clippy-land.sh",
+        "install -Dm0644 resources/io.github.k33wee.clippy-land.desktop /app/share/applications/io.github.k33wee.clippy-land.desktop",
+        "install -Dm0644 resources/io.github.k33wee.clippy-land.metainfo.xml /app/share/metainfo/io.github.k33wee.clippy-land.metainfo.xml",
+        "install -Dm0644 resources/icon.svg /app/share/icons/hicolor/scalable/apps/io.github.k33wee.clippy-land.svg",
+        "install -Dm0644 resources/icon.svg /app/share/icons/hicolor/scalable/apps/io.github.k33wee.clippy-land-symbolic.svg",
+        "install -Dm0644 LICENSE /app/share/licenses/io.github.k33wee.clippy-land/LICENSE"
       ],
       "sources": [
         {
-          "type": "dir",
-          "path": "."
+          "type": "git",
+          "url": "https://github.com/k33wee/clippy-land.git",
+          "commit": "465bb7fc61cc478d82ab68a27513b633abfe1f95"
         },
-        {
-          "type": "dir",
-          "path": "vendor",
-          "dest": "vendor"
-        },
-        {
-          "type": "file",
-          "path": ".cargo/config.toml",
-          "dest": ".cargo",
-          "dest-filename": "config.toml"
-        },
-        {
-          "type": "file",
-          "path": "justfile"
-        }
+        "cargo-sources.json"
       ]
     }
   ]

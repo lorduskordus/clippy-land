@@ -4,6 +4,8 @@ on:
   push:
     tags:
       - 'v*'
+    branches:
+      - test
   workflow_dispatch:  # allows manual runs from the Actions tab to test builds
 
 jobs:
@@ -49,8 +51,6 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - uses: dtolnay/rust-toolchain@stable
-
       - name: Resolve version
         id: version
         run: |
@@ -60,28 +60,36 @@ jobs:
             echo "value=$(cargo metadata --no-deps --format-version 1 | jq -r '.packages[0].version')" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Cache vendor directory
-        uses: actions/cache@v5
-        with:
-          path: vendor
-          key: vendor-${{ hashFiles('**/Cargo.lock') }}
-
       - name: Install dependencies
-        run: sudo apt-get update && sudo apt-get install -y flatpak flatpak-builder ostree
+        run: sudo apt-get update && sudo apt-get install -y flatpak flatpak-builder ostree jq
 
-      - name: Add Flathub remote
-        run: flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
-
-      - name: Generate vendored dependencies
-        run: mkdir -p .cargo && cargo vendor > .cargo/config.toml
+      - name: Add Flatpak remotes
+        run: |
+          flatpak remote-add --user --if-not-exists flathub \
+            https://flathub.org/repo/flathub.flatpakrepo
 
       - name: Install Flatpak SDKs
         run: |
           flatpak install --noninteractive --user flathub \
             org.freedesktop.Sdk//25.08 \
             org.freedesktop.Platform//25.08 \
-            org.freedesktop.Sdk.Extension.rust-stable//25.08 \
-            com.system76.Cosmic.BaseApp//stable
+            org.freedesktop.Sdk.Extension.rust-stable//25.08
+
+      - name: Create local manifest
+        # Uses the checked-out source (not the pinned git commit) and strips
+        # com.system76.Cosmic.BaseApp which is only available on pop-os build
+        # infrastructure and cannot be installed from any public remote in CI.
+        # The Rust build is unaffected (statically linked); the resulting bundle
+        # is for pipeline validation only — the real BaseApp build is done by
+        # cosmic-flatpak's own CI after the PR is merged.
+        run: |
+          jq '
+            del(.base) | del(."base-version") |
+            .modules[0].sources = [
+              {"type": "dir", "path": "."},
+              "cargo-sources.json"
+            ]
+          ' io.github.k33wee.clippy-land.json > io.github.k33wee.clippy-land.local.json
 
       - name: Build app
         run: |
@@ -91,7 +99,7 @@ jobs:
             --default-branch=testing \
             --user \
             release \
-            io.github.k33wee.clippy-land.json
+            io.github.k33wee.clippy-land.local.json
 
       - name: Create Flatpak bundle
         run: |
@@ -111,8 +119,8 @@ jobs:
     runs-on: ubuntu-latest
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-    # only publish when triggered by a tag push, not manual runs
-    if: startsWith(github.ref, 'refs/tags/')
+    # publish on tag pushes and on the test branch
+    if: startsWith(github.ref, 'refs/tags/') || github.ref == 'refs/heads/test'
     permissions:
       contents: write
     steps:
@@ -125,3 +133,5 @@ jobs:
             deb/*.deb
             flatpak/*.flatpak
           generate_release_notes: true
+          prerelease: ${{ github.ref == 'refs/heads/test' }}
+          tag_name: ${{ github.ref == 'refs/heads/test' && 'test-latest' || github.ref_name }}

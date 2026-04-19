@@ -4,36 +4,75 @@
   <metadata_license>CC0-1.0</metadata_license>
   <project_license>GPL-3.0-or-later</project_license>
   <name>Clippy Land</name>
-  <summary>Clipboard history applet for COSMIC</summary>
+  <summary>Clipboard history for COSMIC panel</summary>
   <summary xml:lang="cs">Applet historie schránky pro COSMIC</summary>
+  <developer id="io.github.k33wee">
+    <name>k33wee</name>
+  </developer>
   <description>
-    <p>A COSMIC panel applet that keeps a history of recently copied text.</p>
-    <p xml:lang="cs">Applet pro panel COSMIC, který uchovává historii nedávno zkopírovaného textu.</p>
-    <p xml:lang="it">COSMIC panel applet, mantiene la cronologia del testo copiato di recente.</p>
-    <p xml:lang="pt">Um applet para o painel COSMIC que mantém histórico de cópias recentes.</p>
+    <p>**Note: This applet only works on the COSMIC™ desktop environment.**</p>
+    <p>Clippy Land is a COSMIC panel applet that keeps a history of recently copied text
+    and images. Click the panel icon to browse, re-copy, pin, or delete clipboard entries
+    without leaving your workflow.</p>
+    <p>Features:</p>
+    <ul>
+      <li>Stores up to 30 clipboard entries (text and images)</li>
+      <li>Re-copy any entry with a single click</li>
+      <li>Pin up to 5 important entries so they stay at the top</li>
+      <li>Remove individual entries or clear the entire history at once</li>
+      <li>Keyboard navigation with arrow keys (or Vim-style h/j/k/l)</li>
+    </ul>
+    <!-- Translations below -->
+    <p xml:lang="cs">Applet pro panel COSMIC, který uchovává historii nedávno zkopírovaného textu a obrázků.</p>
+    <p xml:lang="it">COSMIC panel applet che mantiene la cronologia del testo e delle immagini copiati.</p>
+    <p xml:lang="pt">Um applet para o painel COSMIC que mantém histórico de cópias recentes de texto e imagens.</p>
   </description>
-  <icon type="stock">io.github.k33wee.clippy-land-symbolic</icon>
+  <icon type="stock">io.github.k33wee.clippy-land</icon>
   <launchable type="desktop-id">io.github.k33wee.clippy-land.desktop</launchable>
   <url type="homepage">https://github.com/k33wee/clippy-land</url>
   <url type="bugtracker">https://github.com/k33wee/clippy-land/issues</url>
+  <url type="vcs-browser">https://github.com/k33wee/clippy-land</url>
   <provides>
-    <id>com.system76.CosmicApplet</id>
     <binary>cosmic-applet-clippy-land</binary>
   </provides>
-  <supports>
+  <requires>
     <control>keyboard</control>
     <control>pointing</control>
-    <control>touch</control>
-  </supports>
+    <display_length compare="ge">768</display_length>
+  </requires>
   <categories>
     <category>Utility</category>
   </categories>
+  <keywords>
+    <keyword>clipboard</keyword>
+    <keyword>history</keyword>
+    <keyword>panel</keyword>
+    <keyword>applet</keyword>
+    <keyword>COSMIC</keyword>
+    <keyword>Wayland</keyword>
+    <keyword>copy</keyword>
+    <keyword>paste</keyword>
+  </keywords>
   <screenshots>
     <screenshot type="default">
-      <image>https://raw.githubusercontent.com/k33wee/clippy-land/main/resources/example.png</image>
+      <image>https://raw.githubusercontent.com/k33wee/clippy-land/v0.3.5/resources/example.png</image>
       <caption>Clipboard history popup</caption>
       <caption xml:lang="cs">Okno historie schránky</caption>
     </screenshot>
   </screenshots>
+  <releases>
+    <release version="0.3.6" date="2026-04-19">
+      <url type="details">https://github.com/k33wee/clippy-land/releases/tag/v0.3.5</url>
+      <description>
+        <p>Rewritten metainfo file for better compatibility with flathub requirements. No functional changes.</p>
+      </description>
+    </release>
+    <release version="0.3.5" date="2026-04-10">
+      <url type="details">https://github.com/k33wee/clippy-land/releases/tag/v0.3.5</url>
+      <description>
+        <p>Fixes language metadata in desktop and metainfo files. Adds aarch64 Flatpak build support.</p>
+      </description>
+    </release>
+  </releases>
   <content_rating type="oars-1.1" />
 </component>
