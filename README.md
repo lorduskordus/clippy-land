@@ -14,7 +14,7 @@ the contents change.
 - Remove individual entries from the history
 - Clear all entries from history with one click
 - Pin important entries to the top of the history (5 pinned entries max)
-- Move between entries with arrow keys ( **up/down** or **k/j** to navigate between entries, **left/right** or **h/l** to move to pin or delete buttons. You need to interact with the applet at least once to enable keyboard navigation)
+- Move between entries with arrow keys ( **up/down** or **k/j** to navigate between entries, **left/right** or **h/l** to move to pin or delete buttons. You need to interact with the applet at least once to enable keyboard navigation, or open it with a custom shortcut)
 - Adds keyboard shortcuts for opening the history (see [Usage](#usage) below)
 
 ## Table of Contents
