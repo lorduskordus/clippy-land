@@ -10,10 +10,9 @@
     <name>k33wee</name>
   </developer>
   <description>
-    <p>**Note: This applet only works on the COSMIC™ desktop environment.**</p>
-    <p>Clippy Land is a COSMIC panel applet that keeps a history of recently copied text
-    and images. Click the panel icon to browse, re-copy, pin, or delete clipboard entries
-    without leaving your workflow.</p>
+    <p>Clippy Land is a COSMIC panel applet that keeps a history of recently copied text and images.
+    Click the panel icon to browse, re-copy, pin, or delete clipboard entries without leaving your workflow.
+    Note: this applet only works on the COSMIC™ desktop environment.</p>
     <p>Features:</p>
     <ul>
       <li>Stores up to 30 clipboard entries (text and images)</li>
@@ -36,10 +35,12 @@
     <binary>cosmic-applet-clippy-land</binary>
   </provides>
   <requires>
-    <control>keyboard</control>
-    <control>pointing</control>
     <display_length compare="ge">768</display_length>
   </requires>
+  <recommends>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </recommends>
   <categories>
     <category>Utility</category>
   </categories>
@@ -55,12 +56,18 @@
   </keywords>
   <screenshots>
     <screenshot type="default">
-      <image>https://raw.githubusercontent.com/k33wee/clippy-land/v0.3.5/resources/example.png</image>
+      <image>https://raw.githubusercontent.com/k33wee/clippy-land/main/resources/example.png</image>
       <caption>Clipboard history popup</caption>
       <caption xml:lang="cs">Okno historie schránky</caption>
     </screenshot>
   </screenshots>
   <releases>
+    <release version="0.4.0" date="2026-04-20">
+      <url type="details">https://github.com/k33wee/clippy-land/releases/tag/v0.4.0</url>
+      <description>
+        <p>Adds searchbar and toggle method for opening the clipboard with a keyboard shortcut.</p>
+      </description>
+    </release>
     <release version="0.3.6" date="2026-04-19">
       <url type="details">https://github.com/k33wee/clippy-land/releases/tag/v0.3.5</url>
       <description>

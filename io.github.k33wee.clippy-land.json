@@ -10,9 +10,10 @@
   "finish-args": [
     "--share=ipc",
     "--socket=wayland",
+    "--socket=fallback-x11",
     "--filesystem=/run/user",
-    "--talk-name=com.system76.CosmicSettingsDaemon",
-    "--filesystem=xdg-config/cosmic:rw"
+    "--filesystem=xdg-config/cosmic:rw",
+    "--talk-name=com.system76.CosmicSettingsDaemon"
   ],
   "build-options": {
     "append-path": "/usr/lib/sdk/rust-stable/bin",
@@ -39,7 +40,7 @@
         {
           "type": "git",
           "url": "https://github.com/k33wee/clippy-land.git",
-          "commit": "465bb7fc61cc478d82ab68a27513b633abfe1f95"
+          "branch": "test"
         },
         "cargo-sources.json"
       ]

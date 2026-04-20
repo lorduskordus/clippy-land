@@ -1,8 +1,14 @@
 use super::{history, scroll};
 use crate::app::model::{FocusPart, HistoryItem};
+use crate::app::view::filtered_indices;
 use crate::app::{AppModel, Message};
 use crate::services::clipboard::ClipboardEntry;
-use cosmic::iced_winit::commands::popup::{destroy_popup, get_popup};
+use cosmic::iced::Limits;
+use cosmic::iced::platform_specific::shell::wayland::commands::layer_surface::{
+    self, KeyboardInteractivity, destroy_layer_surface, get_layer_surface,
+};
+use cosmic::iced::platform_specific::shell::wayland::commands::popup::{destroy_popup, get_popup};
+use cosmic::iced::runtime::platform_specific::wayland::layer_surface::SctkLayerSurfaceSettings;
 use cosmic::prelude::*;
 
 pub(super) fn update(app: &mut AppModel, message: Message) -> Task<cosmic::Action<Message>> {
@@ -61,19 +67,16 @@ pub(super) fn update(app: &mut AppModel, message: Message) -> Task<cosmic::Actio
             app.history_viewport = Some(viewport);
         }
         Message::MoveSelectionUp => {
-            if app.history.is_empty() {
+            let visible = filtered_indices(app);
+            if visible.is_empty() {
                 return Task::none();
             }
-            let len = app.history.len();
-            let new_idx = match app.hovered_index {
-                Some(idx) => {
-                    if idx == 0 {
-                        len - 1
-                    } else {
-                        idx - 1
-                    }
-                }
-                None => len - 1,
+            let new_idx = match app
+                .hovered_index
+                .and_then(|h| visible.iter().position(|&i| i == h))
+            {
+                Some(pos) => visible[if pos == 0 { visible.len() - 1 } else { pos - 1 }],
+                None => *visible.last().unwrap(),
             };
             app.hovered_index = Some(new_idx);
             app.hovered_focus = None;
@@ -82,13 +85,16 @@ pub(super) fn update(app: &mut AppModel, message: Message) -> Task<cosmic::Actio
             return scroll::scroll_selection_into_view(app, new_idx);
         }
         Message::MoveSelectionDown => {
-            if app.history.is_empty() {
+            let visible = filtered_indices(app);
+            if visible.is_empty() {
                 return Task::none();
             }
-            let len = app.history.len();
-            let new_idx = match app.hovered_index {
-                Some(idx) => (idx + 1) % len,
-                None => 0,
+            let new_idx = match app
+                .hovered_index
+                .and_then(|h| visible.iter().position(|&i| i == h))
+            {
+                Some(pos) => visible[(pos + 1) % visible.len()],
+                None => visible[0],
             };
             app.hovered_index = Some(new_idx);
             app.hovered_focus = None;
@@ -153,12 +159,26 @@ pub(super) fn update(app: &mut AppModel, message: Message) -> Task<cosmic::Actio
                 }
             }
         }
+        Message::SearchChanged(query) => {
+            app.search_query = query;
+            app.hovered_index = None;
+            app.hovered_focus = None;
+            app.keyboard_focus = None;
+        }
         Message::TogglePopup => {
             return if let Some(p) = app.popup.take() {
-                destroy_popup(p)
+                let is_layer = app.popup_is_layer_surface;
+                app.popup_is_layer_surface = false;
+                app.search_query.clear();
+                if is_layer {
+                    destroy_layer_surface(p)
+                } else {
+                    destroy_popup(p)
+                }
             } else {
                 let new_id = cosmic::iced::window::Id::unique();
                 app.popup.replace(new_id);
+                app.popup_is_layer_surface = false;
                 let popup_settings = app.core.applet.get_popup_settings(
                     app.core.main_window_id().unwrap(),
                     new_id,
@@ -169,9 +189,54 @@ pub(super) fn update(app: &mut AppModel, message: Message) -> Task<cosmic::Actio
                 get_popup(popup_settings)
             };
         }
+        Message::ToggleViaIpc => {
+            return if let Some(p) = app.popup.take() {
+                let is_layer = app.popup_is_layer_surface;
+                app.popup_is_layer_surface = false;
+                app.search_query.clear();
+                if is_layer {
+                    destroy_layer_surface(p)
+                } else {
+                    destroy_popup(p)
+                }
+            } else {
+                let new_id = cosmic::iced::window::Id::unique();
+                app.popup.replace(new_id);
+                app.popup_is_layer_surface = true;
+                get_layer_surface(SctkLayerSurfaceSettings {
+                    id: new_id,
+                    keyboard_interactivity: KeyboardInteractivity::OnDemand,
+                    // The anchor is set to TOP | LEFT | RIGHT to make the layer surface span the entire width of the screen and be positioned at the top, similar to a notification or a panel.
+                    // Currently there is no way to follow the icon position in cosmic panel
+                    anchor: layer_surface::Anchor::TOP
+                        | layer_surface::Anchor::LEFT
+                        | layer_surface::Anchor::RIGHT,
+                    namespace: "clippy-land".into(),
+                    size: Some((None, Some(400))),
+                    size_limits: Limits::NONE.min_width(1.0).min_height(1.0),
+                    ..Default::default()
+                })
+            };
+        }
+        Message::WindowUnfocused(id) => {
+            if app.popup.as_ref() == Some(&id) && app.popup_is_layer_surface {
+                return if let Some(p) = app.popup.take() {
+                    app.popup_is_layer_surface = false;
+                    app.search_query.clear();
+                    app.hovered_index = None;
+                    app.at_scroll_bottom = false;
+                    app.history_viewport = None;
+                    destroy_layer_surface(p)
+                } else {
+                    Task::none()
+                };
+            }
+        }
         Message::PopupClosed(id) => {
             if app.popup.as_ref() == Some(&id) {
                 app.popup = None;
+                app.popup_is_layer_surface = false;
+                app.search_query.clear();
                 app.hovered_index = None;
                 app.at_scroll_bottom = false;
                 app.history_viewport = None;

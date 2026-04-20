@@ -13,6 +13,10 @@ pub(super) struct HistoryItem {
 pub struct AppModel {
     pub(super) core: cosmic::Core,
     pub(super) popup: Option<Id>,
+    /// True when the popup was opened via IPC (layer surface), false for icon click (XDG popup).
+    pub(super) popup_is_layer_surface: bool,
+    /// Current search query for filtering clipboard history.
+    pub(super) search_query: String,
     /// Latest clipboard entries, newest-first (with pinned items kept at the top).
     pub(super) history: VecDeque<HistoryItem>,
     /// Index of the history entry the mouse is currently hovering over.

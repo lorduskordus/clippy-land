@@ -6,6 +6,8 @@ mod summary;
 #[cfg(test)]
 mod tests;
 
+pub(super) use popup::filtered_indices;
+
 use super::{AppModel, Message};
 use cosmic::iced::window::Id;
 use cosmic::prelude::*;

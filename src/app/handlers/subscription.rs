@@ -1,4 +1,5 @@
 use crate::app::{AppModel, Message};
+use crate::ipc;
 use crate::services::clipboard;
 use cosmic::iced::Subscription;
 use cosmic::iced::futures::channel::mpsc;
@@ -8,9 +9,8 @@ use std::time::Duration;
 pub(super) fn subscription(app: &AppModel) -> Subscription<Message> {
     struct ClipboardSubscription;
 
-    let mut subs: Vec<Subscription<Message>> = vec![Subscription::run_with(
-        std::any::TypeId::of::<ClipboardSubscription>(),
-        |_| {
+    let mut subs: Vec<Subscription<Message>> = vec![
+        Subscription::run_with(std::any::TypeId::of::<ClipboardSubscription>(), |_| {
             cosmic::iced::stream::channel(1, move |mut channel: mpsc::Sender<Message>| async move {
                 let mut last_seen: Option<clipboard::ClipboardFingerprint> = None;
 
@@ -38,14 +38,24 @@ pub(super) fn subscription(app: &AppModel) -> Subscription<Message> {
                     }
                 }
             })
-        },
-    )];
+        }),
+        ipc::signal_file_watcher(),
+    ];
 
     if app.popup.is_some() {
+        use cosmic::iced::core::keyboard;
+        use cosmic::iced::core::keyboard::key::Named as NamedKey;
+        use cosmic::iced::event::{listen_raw, listen_with};
         use cosmic::iced::{Event, event};
-        use cosmic::iced_core::keyboard;
-        use cosmic::iced_core::keyboard::key::Named as NamedKey;
-        use cosmic::iced_futures::event::listen_raw;
+
+        let unfocus_sub = listen_with(|event, _status, window_id| {
+            if let Event::Window(cosmic::iced::window::Event::Unfocused) = event {
+                Some(Message::WindowUnfocused(window_id))
+            } else {
+                None
+            }
+        });
+        subs.push(unfocus_sub);
 
         let key_sub = listen_raw(move |event, status, _| {
             if event::Status::Ignored != status {
@@ -62,6 +72,7 @@ pub(super) fn subscription(app: &AppModel) -> Subscription<Message> {
                     NamedKey::ArrowLeft => return Some(Message::MoveFocusLeft),
                     NamedKey::ArrowRight => return Some(Message::MoveFocusRight),
                     NamedKey::Enter => return Some(Message::ActivateSelection),
+                    NamedKey::Escape => return Some(Message::TogglePopup),
                     _ => (),
                 },
                 Event::Keyboard(keyboard::Event::KeyPressed {
@@ -86,7 +97,6 @@ pub(super) fn subscription(app: &AppModel) -> Subscription<Message> {
 
             None
         });
-
         subs.push(key_sub);
     }
 

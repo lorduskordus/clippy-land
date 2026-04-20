@@ -10,8 +10,8 @@ pub use model::AppModel;
 use cosmic::iced::{Subscription, window::Id};
 use cosmic::prelude::*;
 
-pub(super) fn history_scroll_id() -> cosmic::iced_core::widget::Id {
-    cosmic::iced_core::widget::Id::new("history-scroll")
+pub(super) fn history_scroll_id() -> cosmic::iced::core::widget::Id {
+    cosmic::iced::core::widget::Id::new("history-scroll")
 }
 
 impl cosmic::Application for AppModel {

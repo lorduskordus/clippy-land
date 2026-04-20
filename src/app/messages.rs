@@ -6,7 +6,11 @@ use cosmic::iced::window::Id;
 #[derive(Debug, Clone)]
 pub enum Message {
     TogglePopup,
+    /// Toggle popup triggered externally via the --toggle CLI flag.
+    ToggleViaIpc,
     PopupClosed(Id),
+    /// Sent when a window loses focus, used to close the layer surface popup.
+    WindowUnfocused(Id),
     ClipboardChanged(clipboard::ClipboardEntry),
     TogglePin(usize),
     RemoveHistory(usize),
@@ -14,6 +18,8 @@ pub enum Message {
     CopyFromHistory(usize),
     HoverEntry(Option<(usize, crate::app::model::FocusPart)>),
     HistoryScrolled(scrollable::Viewport),
+    /// Search query changed — filters the visible history items.
+    SearchChanged(String),
     /// Move the selection up (keyboard)
     MoveSelectionUp,
     /// Move the selection down (keyboard)

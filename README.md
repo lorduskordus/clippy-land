@@ -14,20 +14,21 @@ the contents change.
 - Remove individual entries from the history
 - Clear all entries from history with one click
 - Pin important entries to the top of the history (5 pinned entries max)
-- Move between entries with arrow keys (up/down or k/j to navigate between entries, left/right or h/l to move to pin or delete buttons. You need to interact with the applet at least once to enable keyboard navigation)
+- Move between entries with arrow keys ( **up/down** or **k/j** to navigate between entries, **left/right** or **h/l** to move to pin or delete buttons. You need to interact with the applet at least once to enable keyboard navigation)
+- Adds keyboard shortcuts for opening the history (see [Usage](#usage) below)
 
 ## Table of Contents
 
-> - [Dependencies](#dependencies)
-> - [Build](#build)
-> - [Build/Install with just](#buildinstall-with-just)
-> - [Install with custom paths](#install-with-custom-paths)
-> - [Install with Flatpak](#install-with-flatpak)
-> - [Install for Debian/Ubuntu](#install-for-debianubuntu)
-> - [Install for Fedora](#install-for-fedora)
-> - [Usage](#usage)
-> - [Notes](#notes)
-> - [Translations](#translations)
+- [Dependencies](#dependencies)
+- [Build](#build)
+- [Build/Install with just](#buildinstall-with-just)
+- [Install with custom paths](#install-with-custom-paths)
+- [Install with Flatpak](#install-with-flatpak)
+- [Install for Debian/Ubuntu](#install-for-debianubuntu)
+- [Install for Fedora](#install-for-fedora)
+- [Usage](#usage)
+- [Notes](#notes)
+- [Translations](#translations)
 
 ## Dependencies
 
@@ -48,10 +49,10 @@ cargo build --release
 
 ```bash
 # build
-just build
+sudo just build
 
 # install for current user
-just install
+sudo just install
 ```
 
 ## Install with custom paths
@@ -60,21 +61,21 @@ Pass a `prefix` variable to install everything under a custom root:
 
 ```bash
 # install under ~/.local  (default is /usr)
-just prefix=~/.local install
+sudo just prefix=~/.local install
 
 # uninstall
-just prefix=~/.local uninstall
+sudo just prefix=~/.local uninstall
 ```
 
 All paths are derived from `prefix`:
 
-| Path | Default |
-|------|---------|
-| `<prefix>/bin` | binary + launcher script |
-| `<prefix>/share/applications` | `.desktop` file |
-| `<prefix>/share/icons/hicolor/scalable/apps` | app icon |
-| `<prefix>/share/metainfo` | MetaInfo file |
-| `<prefix>/share/licenses/<appid>` | license |
+| Path                                         | Default                  |
+| -------------------------------------------- | ------------------------ |
+| `<prefix>/bin`                               | binary + launcher script |
+| `<prefix>/share/applications`                | `.desktop` file          |
+| `<prefix>/share/icons/hicolor/scalable/apps` | app icon                 |
+| `<prefix>/share/metainfo`                    | MetaInfo file            |
+| `<prefix>/share/licenses/<appid>`            | license                  |
 
 ## Install with Flatpak
 
@@ -126,8 +127,20 @@ rpm-ostree install cosmic-applet-clippy-land
 
 ## Usage
 
-Open **COSMIC Settings → Desktop → Panel → Applets** and add “Clippy Land” to your panel.
+Open **COSMIC Settings → Desktop → Panel → Applets** and add "Clippy Land" to your panel.
 You might need to log out and back in to see the applet in the list of available applets.
+
+## Keyboard Shortcut
+
+You can open the clipboard history with a keyboard shortcut via the `--toggle` flag.
+
+Go to **COSMIC Settings → Keyboard → Custom Shortcuts**, add a new shortcut with:
+
+- **Name:** Clipboard History
+- **Command:** `cosmic-applet-clippy-land --toggle` (or `flatpak run io.github.k33wee.clippy-land --toggle` if installed via Flatpak)
+- **Shortcut:** your preferred key combo (e.g. `Super+V`)
+
+> **Note:** Due to a current limitation in the COSMIC panel, opening a popup without a pointer event (i.e. without actually clicking the applet icon) is not natively supported. As a workaround, `--toggle` opens the history as a full-width layer surface anchored to the top of the screen rather than as the usual dropdown under the icon. This is a known limitation and may be improved in the future once COSMIC panel exposes a proper API for this.
 
 ## Notes
 
