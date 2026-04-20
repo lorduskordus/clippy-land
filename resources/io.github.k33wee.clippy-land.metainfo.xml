@@ -10,12 +10,16 @@
     <name>k33wee</name>
   </developer>
   <description>
-    <p>Clippy Land is a COSMIC panel applet that keeps a history of recently copied text and images.
-    Click the panel icon to browse, re-copy, pin, or delete clipboard entries without leaving your workflow.
-    Note: this applet only works on the COSMIC™ desktop environment.</p>
-    <p xml:lang="cs">Clippy Land je applet pro panel COSMIC, který uchovává historii nedávno zkopírovaného textu a obrázků.
-    Kliknutím na ikonu v panelu můžete procházet, znovu kopírovat, připínat nebo mazat položky schránky, aniž byste museli přerušit svou práci.
-    Poznámka: Tento applet funguje pouze v prostředí COSMIC™.</p>
+    <p>
+      Clippy Land is a COSMIC panel applet that keeps a history of recently copied text and images.
+      Click the panel icon to browse, re-copy, pin, or delete clipboard entries without leaving your workflow.
+      Note: this applet only works on the COSMIC™ desktop environment.
+    </p>
+    <p xml:lang="cs">
+      Clippy Land je applet pro panel COSMIC, který uchovává historii nedávno zkopírovaného textu a obrázků.
+      Kliknutím na ikonu v panelu můžete procházet, znovu kopírovat, připínat nebo mazat položky schránky, aniž byste museli přerušit svou práci.
+      Poznámka: Tento applet funguje pouze v prostředí COSMIC™.
+    </p>
     <p xml:lang="it">COSMIC panel applet che mantiene la cronologia del testo e delle immagini copiati.</p>
     <p xml:lang="pt">Um applet para o painel COSMIC que mantém histórico de cópias recentes de texto e imagens.</p>
 
